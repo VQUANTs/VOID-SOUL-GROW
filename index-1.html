@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOID Soul System — LV1-30</title>
+<meta name="description" content="VOID Soul System: gamified Cybersecurity + Quant curriculum tracker, LV1-30.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void-0:#07070d;
+    --void-1:#0d0d18;
+    --void-2:#13131f;
+    --void-3:#1b1b2a;
+    --line:#26263a;
+    --text-hi:#eef0fa;
+    --text-mid:#a9acc4;
+    --text-lo:#6d6f8a;
+    --cyber:#33f2e0;
+    --cyber-dim:#1a8a80;
+    --quant:#ffb347;
+    --quant-dim:#8a6423;
+    --ring:#ff4d6d;
+    --ring-dim:#7a2333;
+    --gold:#ffd166;
+    --radius:14px;
+    --maxw:1080px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(51,242,224,0.08), transparent 60%),
+      radial-gradient(1200px 700px at 100% 0%, rgba(255,179,71,0.06), transparent 55%),
+      var(--void-0);
+    color:var(--text-hi);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+  a{color:inherit;}
+  :focus-visible{outline:2px solid var(--cyber); outline-offset:2px;}
+
+  /* ---------- Layout ---------- */
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 20px 80px;}
+  header.hero{
+    position:relative;
+    padding:38px 20px 26px;
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+  }
+  header.hero::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:34px 34px;
+    mask-image:radial-gradient(ellipse 700px 300px at 20% 0%, black, transparent 75%);
+    pointer-events:none;
+  }
+  .hero-inner{
+    max-width:var(--maxw); margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between; gap:24px;
+    position:relative; z-index:1; flex-wrap:wrap;
+  }
+  .brand{display:flex; flex-direction:column; gap:6px;}
+  .brand .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.18em;
+    color:var(--text-lo); text-transform:uppercase;
+  }
+  .brand h1{
+    font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,4.4vw,42px);
+    margin:0; letter-spacing:-0.01em;
+    background:linear-gradient(90deg, var(--text-hi), var(--cyber) 60%, var(--quant));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .brand .sub{color:var(--text-mid); font-size:14px; max-width:46ch; line-height:1.5;}
+
+  /* reactor ring */
+  .reactor{display:flex; align-items:center; gap:16px;}
+  .reactor svg{display:block;}
+  .reactor-ring-bg{fill:none; stroke:var(--void-3); stroke-width:8;}
+  .reactor-ring-fg{fill:none; stroke:url(#ringGrad); stroke-width:8; stroke-linecap:round;
+    transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1);}
+  .reactor-core{fill:var(--void-1); stroke:var(--line); stroke-width:1;}
+  .reactor-label{text-anchor:middle;}
+  .reactor-pct{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:20px; fill:var(--text-hi);}
+  .reactor-rank-box{display:flex; flex-direction:column; gap:2px;}
+  .reactor-rank-eyebrow{font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.15em; color:var(--text-lo); text-transform:uppercase;}
+  .reactor-rank{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:19px;}
+  .reactor-xp{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--text-mid);}
+
+  /* legend */
+  .legend{
+    max-width:var(--maxw); margin:22px auto 0; padding:0 20px;
+    display:flex; flex-wrap:wrap; gap:8px;
+  }
+  .legend .chip{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; letter-spacing:.04em;
+    padding:5px 10px; border-radius:999px; border:1px solid var(--line);
+    color:var(--text-mid); background:var(--void-1);
+    display:flex; align-items:center; gap:6px;
+  }
+  .legend .dot{width:7px; height:7px; border-radius:50%; display:inline-block;}
+
+  /* tabs */
+  .tabbar{
+    position:sticky; top:0; z-index:20;
+    background:rgba(7,7,13,0.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .tabbar-inner{
+    max-width:var(--maxw); margin:0 auto; padding:12px 20px;
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .tab{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:.06em;
+    padding:9px 16px; border-radius:10px; border:1px solid var(--line);
+    background:var(--void-1); color:var(--text-mid); cursor:pointer;
+    display:flex; align-items:center; gap:8px; transition:all .15s ease;
+  }
+  .tab:hover{color:var(--text-hi); border-color:var(--text-lo);}
+  .tab.active[data-track="cyber"]{color:var(--void-0); background:var(--cyber); border-color:var(--cyber); font-weight:600;}
+  .tab.active[data-track="quant"]{color:var(--void-0); background:var(--quant); border-color:var(--quant); font-weight:600;}
+  .tab .bar{width:44px; height:4px; border-radius:2px; background:rgba(255,255,255,0.15); overflow:hidden; position:relative;}
+  .tab .bar i{position:absolute; inset:0; width:0%; background:currentColor; opacity:.9;}
+
+  .search-wrap{margin-left:auto; display:flex; align-items:center; gap:8px;}
+  .search{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px;
+    background:var(--void-2); border:1px solid var(--line); border-radius:10px;
+    color:var(--text-hi); padding:9px 12px; width:150px; transition:width .2s ease;
+  }
+  .search:focus{width:210px;}
+  .search::placeholder{color:var(--text-lo);}
+  .reset-btn{
+    font-family:'JetBrains Mono',monospace; font-size:11px;
+    background:transparent; border:1px solid var(--line); color:var(--text-lo);
+    border-radius:10px; padding:9px 11px; cursor:pointer;
+  }
+  .reset-btn:hover{color:var(--ring); border-color:var(--ring-dim);}
+
+  /* level list */
+  .track-name{
+    font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700;
+    margin:30px 0 4px;
+  }
+  .track-desc{color:var(--text-mid); font-size:13.5px; margin-bottom:20px;}
+
+  .lvl{
+    border:1px solid var(--line); border-radius:var(--radius);
+    background:linear-gradient(180deg, var(--void-1), var(--void-2));
+    margin-bottom:10px; overflow:hidden;
+  }
+  .lvl.checkpoint{border-color:var(--ring-dim); box-shadow:0 0 0 1px rgba(255,77,109,0.08) inset;}
+  .lvl.complete{border-color:var(--cyber-dim);}
+
+  .lvl-head{
+    display:flex; align-items:center; gap:14px; padding:14px 16px;
+    cursor:pointer; user-select:none;
+  }
+  .lvl-num{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px;
+    width:40px; height:40px; border-radius:10px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--void-3); color:var(--text-mid); border:1px solid var(--line);
+  }
+  .lvl.checkpoint .lvl-num{color:var(--ring); border-color:var(--ring-dim);}
+  [data-track="cyber"] .lvl.complete .lvl-num{background:rgba(51,242,224,0.12); color:var(--cyber); border-color:var(--cyber-dim);}
+  [data-track="quant"] .lvl.complete .lvl-num{background:rgba(255,179,71,0.12); color:var(--quant); border-color:var(--quant-dim);}
+
+  .lvl-title{flex:1; min-width:0;}
+  .lvl-focus{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; line-height:1.3;}
+  .lvl.checkpoint .lvl-focus{color:var(--ring);}
+  .lvl-meta{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-lo); margin-top:2px;}
+
+  .lvl-ring{flex:none; position:relative; width:34px; height:34px;}
+  .lvl-ring svg{transform:rotate(-90deg);}
+  .lvl-ring-bg{fill:none; stroke:var(--void-3); stroke-width:4;}
+  .lvl-ring-fg{fill:none; stroke-width:4; stroke-linecap:round; transition:stroke-dashoffset .4s ease;}
+  [data-track="cyber"] .lvl-ring-fg{stroke:var(--cyber);}
+  [data-track="quant"] .lvl-ring-fg{stroke:var(--quant);}
+  .lvl-ring-txt{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--text-mid);
+  }
+  .chev{flex:none; color:var(--text-lo); transition:transform .2s ease;}
+  .lvl.open .chev{transform:rotate(180deg);}
+
+  .lvl-body{
+    max-height:0; overflow:hidden; transition:max-height .3s ease;
+    border-top:1px solid transparent;
+  }
+  .lvl.open .lvl-body{border-top:1px solid var(--line);}
+  .lvl-body-inner{padding:14px 16px 18px; display:flex; flex-direction:column; gap:10px;}
+
+  .cp-btn{
+    align-self:flex-start; margin-top:2px;
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; letter-spacing:.04em;
+    background:rgba(255,77,109,0.1); border:1px solid var(--ring-dim); color:var(--ring);
+    padding:8px 14px; border-radius:9px; cursor:pointer;
+  }
+  .cp-btn:hover{background:rgba(255,77,109,0.18);}
+
+  .tier-row{
+    display:flex; gap:10px; padding:9px 10px; border-radius:10px;
+    background:var(--void-1); border:1px solid transparent;
+    align-items:flex-start;
+  }
+  .tier-row:hover{border-color:var(--line);}
+  .tier-check{
+    flex:none; width:20px; height:20px; margin-top:1px; border-radius:6px;
+    border:1.5px solid var(--line); background:var(--void-2); cursor:pointer;
+    display:flex; align-items:center; justify-content:center; appearance:none;
+    -webkit-appearance:none;
+  }
+  .tier-check:checked{background:var(--tier-color, var(--cyber)); border-color:var(--tier-color, var(--cyber));}
+  .tier-check:checked::after{
+    content:"✓"; color:var(--void-0); font-size:13px; font-weight:700; line-height:1;
+  }
+  .tier-txt{flex:1; min-width:0;}
+  .tier-label{
+    font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--tier-color, var(--text-mid)); margin-bottom:2px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .tier-label .xp{color:var(--text-lo); letter-spacing:0; text-transform:none;}
+  .tier-desc{font-size:13px; line-height:1.5; color:var(--text-hi);}
+  .tier-desc.done{color:var(--text-mid); text-decoration:line-through; text-decoration-color:var(--text-lo);}
+
+  /* ring assessment modal */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(4,4,8,0.75); backdrop-filter:blur(4px);
+    display:none; align-items:flex-start; justify-content:center; z-index:100;
+    padding:40px 16px; overflow-y:auto;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--void-1); border:1px solid var(--ring-dim); border-radius:16px;
+    max-width:640px; width:100%; padding:26px 24px 22px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal h2{font-family:'Space Grotesk',sans-serif; color:var(--ring); margin:0 0 4px; font-size:20px;}
+  .modal .modal-sub{color:var(--text-mid); font-size:13px; margin-bottom:18px; line-height:1.5;}
+  .ring-q{border-top:1px solid var(--line); padding:12px 0;}
+  .ring-q-head{display:flex; gap:10px; align-items:baseline; margin-bottom:6px;}
+  .ring-q-num{font-family:'JetBrains Mono',monospace; color:var(--ring); font-size:13px;}
+  .ring-q-name{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14.5px;}
+  .ring-q-text{font-size:12.5px; color:var(--text-mid); margin-bottom:8px;}
+  .ring-select{
+    width:100%; font-family:'JetBrains Mono',monospace; font-size:12.5px;
+    background:var(--void-2); border:1px solid var(--line); color:var(--text-hi);
+    border-radius:8px; padding:8px 10px;
+  }
+  .modal-actions{display:flex; gap:10px; margin-top:18px; justify-content:flex-end;}
+  .btn{
+    font-family:'JetBrains Mono',monospace; font-size:12.5px; letter-spacing:.03em;
+    padding:10px 16px; border-radius:9px; cursor:pointer; border:1px solid var(--line);
+    background:var(--void-2); color:var(--text-mid);
+  }
+  .btn.primary{background:var(--ring); border-color:var(--ring); color:var(--void-0); font-weight:700;}
+  .btn:hover{color:var(--text-hi);}
+
+  footer{
+    max-width:var(--maxw); margin:40px auto 0; padding:20px 20px 0;
+    border-top:1px solid var(--line); color:var(--text-lo); font-size:12px;
+    font-family:'JetBrains Mono',monospace; text-align:center;
+  }
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--void-2); border:1px solid var(--cyber-dim); color:var(--cyber);
+    font-family:'JetBrains Mono',monospace; font-size:12.5px;
+    padding:10px 18px; border-radius:10px; opacity:0; pointer-events:none;
+    transition:all .35s cubic-bezier(.2,.8,.2,1); z-index:200;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:640px){
+    .hero-inner{flex-direction:column; align-items:flex-start;}
+    .reactor{align-self:stretch; justify-content:space-between;}
+    .search{width:110px;}
+    .search:focus{width:150px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important; scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="brand">
+      <span class="eyebrow">// Learn → Practice → Prove → Level Up</span>
+      <h1>VOID Soul System</h1>
+      <p class="sub">LV1–30 · Cybersecurity + Quant. Junior → Hard → Insane → Senior → Industry → National → World. No level for time spent — only for the task, demonstrably done.</p>
+    </div>
+    <div class="reactor">
+      <svg width="86" height="86" viewBox="0 0 86 86">
+        <defs>
+          <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#33f2e0"/>
+            <stop offset="100%" stop-color="#ffb347"/>
+          </linearGradient>
+        </defs>
+        <circle class="reactor-core" cx="43" cy="43" r="30"/>
+        <circle class="reactor-ring-bg" cx="43" cy="43" r="36"/>
+        <circle id="reactorFg" class="reactor-ring-fg" cx="43" cy="43" r="36" stroke-dasharray="226.2" stroke-dashoffset="226.2" transform="rotate(-90 43 43)"/>
+        <text id="reactorPct" x="43" y="48" class="reactor-label reactor-pct">0%</text>
+      </svg>
+      <div class="reactor-rank-box">
+        <span class="reactor-rank-eyebrow">Operator Rank</span>
+        <span id="rankLabel" class="reactor-rank mono">Initiate</span>
+        <span id="xpLabel" class="reactor-xp">0 / 0 XP</span>
+      </div>
+    </div>
+  </div>
+  <div class="legend">
+    <span class="chip"><span class="dot" style="background:var(--cyber)"></span>base</span>
+    <span class="chip"><span class="dot" style="background:#7fe6dc"></span>hard</span>
+    <span class="chip"><span class="dot" style="background:#ffd9a0"></span>insane</span>
+    <span class="chip"><span class="dot" style="background:#8be08b"></span>senior</span>
+    <span class="chip"><span class="dot" style="background:#ffd166"></span>industry</span>
+    <span class="chip"><span class="dot" style="background:#8ab4ff"></span>national</span>
+    <span class="chip"><span class="dot" style="background:#e08bff"></span>world</span>
+    <span class="chip"><span class="dot" style="background:var(--ring)"></span>checkpoint · ring assessment</span>
+  </div>
+</header>
+
+<div class="tabbar">
+  <div class="tabbar-inner">
+    <button class="tab active" data-track="cyber" onclick="setTrack('cyber')">
+      ■ CYBERSECURITY <span class="bar"><i id="barCyber"></i></span>
+    </button>
+    <button class="tab" data-track="quant" onclick="setTrack('quant')">
+      ■ QUANT <span class="bar"><i id="barQuant"></i></span>
+    </button>
+    <div class="search-wrap">
+      <input class="search" id="searchBox" type="text" placeholder="jump to LV or focus…" oninput="renderList()">
+      <button class="reset-btn" onclick="resetProgress()" title="Reset all progress">RESET</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <h2 class="track-name" id="trackName">Cybersecurity Track</h2>
+  <p class="track-desc" id="trackDesc"></p>
+  <div id="levelList"></div>
+</div>
+
+<footer>VOID SOUL SYSTEM · progress stored locally in this browser · run the Ring Assessment at LV10 / LV20 / LV30</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- Ring Assessment Modal -->
+<div class="modal-overlay" id="ringModal">
+  <div class="modal">
+    <h2 id="ringModalTitle">Ring Assessment — LV10</h2>
+    <p class="modal-sub">Use only evidence you already produced this block. Answer honestly, then assign one tier per ring: Awakened → Stable → Refined → Superior → Transcendent.</p>
+    <div id="ringQuestions"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeRingModal()">Cancel</button>
+      <button class="btn primary" onclick="saveRingAssessment()">Save Snapshot</button>
+    </div>
+  </div>
+</div>
+
+<script id="void-data" type="application/json">{"cyber": {"name": "Cybersecurity Track", "levels": [{"lv": 1, "focus": "Networking", "checkpoint": false, "tiers": {"base": "Subnet a /24 by hand, document it.", "hard": "Design a VLSM scheme for 4 depts with unequal host needs.", "insane": "On paper, no calculator, 15-min limit, minimize wasted addresses across 6 subnets.", "senior": "Design + document IP addressing and route summarization for a multi-site enterprise WAN. Search: \"VLSM subnetting practice\", \"CCNP ENARSI route summarization\", \"Cisco IP addressing best practices\".", "industry": "Own routing/addressing architecture for a real ISP or enterprise network as a network engineer, CCIE-level. Search: \"CCIE Enterprise Infrastructure\", \"BGP route summarization design\".", "national": "Place on a national CCDC/CyberPatriot-style team. Search: \"CyberPatriot national finals\", \"Collegiate Cyber Defense Competition\".", "world": "Design/consult on backbone architecture for a global Tier-1 ISP; NANOG-level recognition. Search: \"NANOG conference\", \"Tier 1 ISP network architect\"."}}, {"lv": 2, "focus": "Linux fundamentals", "checkpoint": false, "tiers": {"base": "Complete a Linux fundamentals room.", "hard": "Do it over SSH only, no GUI; write a cheat-sheet from memory after.", "insane": "Harden a fresh VM against a CIS benchmark checklist from memory, no reference.", "senior": "Automate CIS benchmark hardening at scale with config management. Search: \"OpenSCAP CIS benchmark scan\", \"Ansible Lockdown STIG role\", \"Lynis security audit tool\".", "industry": "Contribute to a CIS Benchmark or a Linux distro/kernel hardening standard used by real organizations. Search: \"CIS Benchmarks contributor\", \"Linux kernel self-protection project\".", "national": "Place in a national WorldSkills IT/Network qualifier. Search: \"WorldSkills national qualifier IT Network Systems\".", "world": "Medal at WorldSkills International in IT/Network Systems. Search: \"WorldSkills International IT Network Systems Administration\"."}}, {"lv": 3, "focus": "Windows/AD basics", "checkpoint": false, "tiers": {"base": "Map a Windows VM's AD structure.", "hard": "Find 3 misconfigs in that AD lab, unprompted.", "insane": "Build the AD lab yourself (install DC, join hosts) before mapping it.", "senior": "Run a real AD security assessment and produce a hardening report. Search: \"BloodHound attack path mapping\", \"PingCastle AD security audit\", \"Purple Knight AD assessment\".", "industry": "Lead AD security assessments as a principal consultant; present AD attack-path research at a conference. Search: \"SpecterOps AD security research\", \"DEF CON Active Directory talk\".", "national": "Lead red team for a national government/critical-infra AD environment. Search: \"national CERT red team engagement\".", "world": "Recognized global authority on AD security — build tooling used worldwide (BloodHound-tier). Search: \"BloodHound SpecterOps creators\", \"DEF CON keynote AD security\"."}}, {"lv": 4, "focus": "Python scripting", "checkpoint": false, "tiers": {"base": "Script that automates a port scan.", "hard": "Make it multi-threaded and rate-limit-aware.", "insane": "Write it with raw sockets — no nmap/scapy — implementing your own SYN scan.", "senior": "Build a modular offensive-tooling framework (plugin architecture) usable on real engagements. Search: \"python asyncio port scanner\", \"building a security tooling framework python\", \"scapy custom scanner\".", "industry": "Publish an open-source security tool with real adoption (stars/active users) in the field. Search: \"GitHub trending security tools python\", \"OWASP flagship tool project\".", "national": "Your tool adopted by a national CERT/security agency. Search: \"national CERT open source tool adoption\".", "world": "Your tool becomes a global industry standard, like nmap or Metasploit. Search: \"nmap Fyodor history\", \"Metasploit project history\"."}}, {"lv": 5, "focus": "Web fundamentals", "checkpoint": false, "tiers": {"base": "Inspect traffic on 3 sites in Burp.", "hard": "Find a site leaking data in headers/cookies, unprompted.", "insane": "Find the same leak using only curl/devtools — no Burp at all.", "senior": "Run a full manual web app pentest against a deliberately vulnerable app and write findings mapped to OWASP Top 10. Search: \"OWASP Testing Guide v4.2\", \"OWASP Top 10 2021\", \"OWASP Juice Shop walkthrough\".", "industry": "Become a recognized OWASP project contributor with real methodology impact. Search: \"OWASP contributor guide\", \"OWASP Testing Guide project\".", "national": "Top researcher on your country's bug bounty leaderboard. Search: \"HackerOne country leaderboard\".", "world": "Lead/shape a global standard like the OWASP Top 10. Search: \"OWASP Top 10 project leadership\", \"OWASP Global Board\"."}}, {"lv": 6, "focus": "Recon: DNS & ports", "checkpoint": false, "tiers": {"base": "Enumerate DNS + ports for a lab target.", "hard": "Do it fully passively first, then compare to active.", "insane": "Full external recon with zero automated tools (no amass/subfinder), fully manual.", "senior": "Build a repeatable attack-surface-management / OSINT recon pipeline. Search: \"amass OSINT framework\", \"subdomain takeover checklist\", \"Shodan API recon automation\".", "industry": "Maintain/contribute to a major recon tool (Amass/Subfinder) or build an ASM product used by real orgs. Search: \"OWASP Amass maintainer\", \"attack surface management startup\".", "national": "Recon tooling adopted by a national cybersecurity agency. Search: \"CISA open source security tools\".", "world": "Found/lead a globally used ASM company (Shodan/Censys tier). Search: \"Shodan John Matherly\", \"Censys company history\"."}}, {"lv": 7, "focus": "Nmap & recon tools", "checkpoint": false, "tiers": {"base": "Full nmap scan + service report.", "hard": "Manually confirm 2 services nmap misidentifies.", "insane": "Reproduce nmap's OS-fingerprint result by hand-analyzing raw packet responses.", "senior": "Perform recon/scanning inside a real bug bounty program scope, following program rules of engagement. Search: \"bug bounty recon methodology\", \"nmap NSE scripting engine\", \"HackerOne scope rules\".", "industry": "Get an NSE script merged upstream into nmap, or rank as a top recon-focused bug bounty researcher. Search: \"nmap NSE script contribution github\", \"top HackerOne researchers\".", "national": "Roster spot on a nationally ranked CTF team. Search: \"national CTF team roster picoCTF\".", "world": "Compete at DEF CON CTF finals. Search: \"DEF CON CTF finals qualifying teams\"."}}, {"lv": 8, "focus": "Crypto basics", "checkpoint": false, "tiers": {"base": "Decode 5 encodings, crack a hash.", "hard": "Crack a hash with a wordlist you build from context.", "insane": "Crack it CPU-only, no GPU, under a hard time limit — CTF conditions.", "senior": "Assess a real application's cryptographic implementation against industry guidance. Search: \"OWASP Cryptographic Storage Cheat Sheet\", \"NIST SP 800-57 key management\", \"testssl.sh TLS audit\".", "industry": "Publish a real cryptographic vulnerability disclosure (CVE) or join a crypto-audit firm. Search: \"CVE cryptographic vulnerability disclosure\", \"Trail of Bits cryptography audit\".", "national": "Place in a national cryptography competition / contribute to a national crypto standard body. Search: \"national cryptography olympiad\".", "world": "Contribute to a NIST-standardized algorithm or publish notable cryptanalysis. Search: \"NIST post-quantum cryptography standardization\", \"cryptanalysis Black Hat research\"."}}, {"lv": 9, "focus": "Bash automation", "checkpoint": false, "tiers": {"base": "Script your recon workflow.", "hard": "Make it resumable after being killed mid-run.", "insane": "Port the same script to a language you don't know yet, learning just enough to do it.", "senior": "Wire your automation into a CI/CD security scanning pipeline. Search: \"DevSecOps pipeline security scanning\", \"GitHub Actions security scan integration\", \"GitLab CI SAST DAST\".", "industry": "Design an org-wide DevSecOps maturity program adopted company-wide as a DevSecOps lead. Search: \"OWASP DSOMM DevSecOps maturity model\".", "national": "Your DevSecOps standard adopted across a national industry sector. Search: \"national DevSecOps framework adoption\".", "world": "Your automation project becomes an internationally adopted open-source standard (Ansible/CNCF tier). Search: \"Ansible project history\", \"CNCF graduated projects\"."}}, {"lv": 10, "focus": "FOUNDATION — CHECKPOINT", "checkpoint": true, "tiers": {"base": "Map a network + ID all services, unaided.", "hard": "Redo it in 50% less time than your first attempt.", "insane": "Run the checkpoint on a real authorized target with a real report deliverable.", "senior": "Sit and pass a recognized entry-level industry certification. Search: \"CompTIA Security+ SY0-701 exam\", \"eLearnSecurity eJPT certification\", \"Cisco CCNA exam\".", "industry": "Working professional pentester with a real client roster, pushing toward OSCE3/CISSP-level credentials. Search: \"OffSec OSCE3 requirements\", \"CISSP certification\".", "national": "Top-10 nationally in CTF/pentest competitions. Search: \"national CTF ranking leaderboard\".", "world": "OSCE3-level, working at a top-tier global firm (Mandiant/CrowdStrike). Search: \"Mandiant careers red team\", \"CrowdStrike Services careers\"."}}, {"lv": 11, "focus": "Web app testing setup", "checkpoint": false, "tiers": {"base": "Intercept/modify 10 requests on a lab app.", "hard": "Chain 3 modifications to bypass a business-logic control.", "insane": "Find a business-logic flaw with zero automated scanning tools.", "senior": "Adopt a real professional testing workflow with paid tooling. Search: \"Burp Suite Professional Collaborator\", \"Burp Suite extension Autorize BApp Store\", \"PortSwigger Web Security Academy\".", "industry": "Reach PortSwigger Web Security Academy hall-of-fame / top researcher recognition level. Search: \"PortSwigger researcher hall of fame\".", "national": "#1 on your national bug bounty leaderboard. Search: \"national bug bounty ranking\".", "world": "Global #1 on HackerOne/Bugcrowd all-time leaderboard. Search: \"HackerOne all-time leaderboard\", \"Bugcrowd top researchers global\"."}}, {"lv": 12, "focus": "SQL injection", "checkpoint": false, "tiers": {"base": "Manual + sqlmap SQLi on a vulnerable app.", "hard": "Exploit blind SQLi manually, no sqlmap.", "insane": "Find and exploit second-order (stored) SQLi triggered elsewhere in the app.", "senior": "Test for SQLi on an authorized real-world target/bug bounty per formal methodology. Search: \"PortSwigger SQL injection labs\", \"OWASP SQL Injection testing guide\", \"sqlmap tamper scripts\".", "industry": "Discover and publish a novel SQLi technique as research referenced by the community. Search: \"PortSwigger research blog SQL injection\".", "national": "Present SQLi research at a national security conference (BSides country edition). Search: \"BSides conference call for papers\".", "world": "Present at Black Hat / DEF CON main stage. Search: \"Black Hat USA speaker archive\", \"DEF CON speaker archive\"."}}, {"lv": 13, "focus": "XSS", "checkpoint": false, "tiers": {"base": "Find/exploit 3 XSS types across 3 labs.", "hard": "Bypass a WAF or CSP filter to land one.", "insane": "Chain XSS into full account takeover with a working session-hijack exploit script.", "senior": "Find and responsibly disclose a real XSS in a live bug bounty program. Search: \"HackerOne XSS disclosed reports\", \"PortSwigger Cross-site scripting labs\", \"CSP bypass cheat sheet\".", "industry": "Earn CVE credit for an XSS in a major product; rank as a top XSS researcher. Search: \"HackerOne Hacktivity CVE XSS\".", "national": "National CERT recognition for disclosing a critical-infrastructure vuln. Search: \"national CERT vulnerability disclosure program\".", "world": "CVE credit in a globally used product (Chrome/major cloud). Search: \"Chrome Vulnerability Reward Program\", \"Google VRP hall of fame\"."}}, {"lv": 14, "focus": "Auth vulnerabilities", "checkpoint": false, "tiers": {"base": "Break a JWT or session flaw.", "hard": "Forge a JWT via algorithm-confusion (RS256→HS256).", "insane": "Find and exploit a flaw in a real OAuth/SSO flow.", "senior": "Assess a production-style SSO/OAuth2/OIDC implementation using real tooling. Search: \"OAuth 2.0 Security Best Current Practice RFC 8252\", \"PortSwigger OAuth authentication labs\", \"jwt_tool github\".", "industry": "Find a critical auth bypass in a major SaaS product (CVE-worthy), or work as an identity/IAM security engineer. Search: \"critical auth bypass CVE bug bounty\", \"identity and access management engineer role\".", "national": "Lead IAM/identity security at a large national enterprise or government body. Search: \"government identity security lead role\".", "world": "Author/shape an RFC or global standard for OAuth/OIDC. Search: \"IETF OAuth working group\", \"OpenID Foundation working group\"."}}, {"lv": 15, "focus": "Access control", "checkpoint": false, "tiers": {"base": "Find an IDOR on a lab/bounty-safe target.", "hard": "Chain IDOR + privesc to reach admin data.", "insane": "Find an IDOR requiring mass enumeration with rate-limit evasion.", "senior": "Contribute real broken-access-control findings to a live bug bounty program. Search: \"OWASP Broken Access Control\", \"IDOR bug bounty writeups\", \"Autorize Burp extension\".", "industry": "Land a widely reported critical IDOR/BAC disclosure at a major company (CVE or press coverage). Search: \"critical IDOR disclosure news\".", "national": "Research cited in a national cybersecurity advisory. Search: \"national cybersecurity advisory bulletin\".", "world": "Research cited in global standards (CWE/OWASP). Search: \"CWE MITRE contributor process\", \"OWASP global standard citation\"."}}, {"lv": 16, "focus": "File-based vulns", "checkpoint": false, "tiers": {"base": "Exploit LFI/RFI or upload vuln.", "hard": "Achieve RCE by chaining LFI with log poisoning.", "insane": "Achieve RCE via an insecure deserialization bug instead.", "senior": "Chain a file-upload vuln into RCE in a documented, exploit-dev style writeup. Search: \"unrestricted file upload OWASP\", \"LFI to RCE log poisoning technique\", \"PHP deserialization exploit\".", "industry": "Publish RCE exploit-chain research recognized at a conference (Black Hat / DEF CON level). Search: \"RCE exploit chain writeup DEF CON Black Hat\".", "national": "Keynote at a national infosec conference on RCE research. Search: \"national infosec conference keynote call\".", "world": "Win a Pwnie Award for best RCE research. Search: \"Pwnie Awards winners list\"."}}, {"lv": 17, "focus": "SSRF & CSRF", "checkpoint": false, "tiers": {"base": "Exploit both on two separate labs.", "hard": "Use SSRF to reach a cloud metadata endpoint (AWS IMDS).", "insane": "Use SSRF to steal IAM creds and pivot into a second cloud service.", "senior": "Exploit SSRF against a real cloud metadata service inside an authorized cloud pentest. Search: \"AWS IMDSv2 SSRF protection\", \"cloud penetration testing methodology\", \"SSRF bible payloads\".", "industry": "Discover cloud SSRF earning a critical finding/bounty from a major cloud provider. Search: \"SSRF cloud bug bounty critical\", \"AWS Vulnerability Disclosure Program\".", "national": "National CERT advisory credit for a critical cloud vuln. Search: \"national CERT cloud vulnerability advisory\".", "world": "Listed in a major cloud provider's global security hall of fame. Search: \"AWS Security Hall of Fame\", \"Google Cloud VRP hall of fame\"."}}, {"lv": 18, "focus": "Command injection", "checkpoint": false, "tiers": {"base": "Exploit with a filter bypass.", "hard": "Blind command injection with OOB exfil (DNS/HTTP).", "insane": "Bypass a WAF purpose-built to block command injection.", "senior": "Bypass a real WAF product (ModSecurity/Cloudflare) in an authorized test and document the technique. Search: \"ModSecurity WAF bypass techniques\", \"OWASP CRS bypass payloads\", \"command injection cheat sheet PayloadsAllTheThings\".", "industry": "Responsibly disclose a WAF bypass to the vendor and receive a CVE/security advisory credit. Search: \"WAF bypass vendor disclosure CVE advisory\".", "national": "Recognized researcher acknowledgment from a national ISP/vendor. Search: \"national ISP security researcher acknowledgment\".", "world": "Credited in a globally deployed WAF vendor's CVE/advisory. Search: \"Cloudflare CVE advisory researcher credit\"."}}, {"lv": 19, "focus": "HTB/THM grind", "checkpoint": false, "tiers": {"base": "10 easy boxes solo, timed, logged.", "hard": "3 boxes with zero hints/writeups, no Metasploit.", "insane": "Solve 3 hard-rated boxes solo, no hints, in one sitting.", "senior": "Reach Hack The Box \"Pro Hacker\" rank or clear Offsec Proving Grounds Practice boxes. Search: \"Hack The Box rank system Pro Hacker\", \"Offsec Proving Grounds Practice\", \"TryHackMe OSCP prep path\".", "industry": "Rank Top 100 globally on the Hack The Box leaderboard. Search: \"Hack The Box leaderboard top 100\".", "national": "National CTF champion. Search: \"national CTF championship winner\".", "world": "DEF CON CTF world finals winner. Search: \"DEF CON CTF winners history\"."}}, {"lv": 20, "focus": "DISCIPLINE — CHECKPOINT", "checkpoint": true, "tiers": {"base": "10 easy + 3 medium boxes, logged.", "hard": "2 medium boxes in half your average time.", "insane": "Run a 24-hour OSCP-style exam simulation: multiple boxes + full report, one sitting.", "senior": "Sit a real practical certification exam under time pressure. Search: \"TCM Security PNPT exam\", \"Practical Junior Penetration Tester PJPT\", \"CRTP Certified Red Team Professional\".", "industry": "Working red teamer holding OSWE/OSEP-level credentials at a real security firm. Search: \"OffSec OSWE Web Expert\", \"OffSec OSEP Experienced Penetration Tester\".", "national": "Represent your country on a national cyber defense team. Search: \"European Cyber Security Challenge national team\".", "world": "Compete at the International Cybersecurity Challenge (ICC). Search: \"International Cybersecurity Challenge ICC\"."}}, {"lv": 21, "focus": "AD fundamentals", "checkpoint": false, "tiers": {"base": "Map an AD lab's trusts/GPOs.", "hard": "Find an abusable GPO misconfig; explain the attack path.", "insane": "Build a multi-domain forest; map cross-forest trust abuse paths.", "senior": "Design/secure a lab reflecting a real enterprise AD tiering model. Search: \"Microsoft Active Directory tiering model\", \"Microsoft Enterprise Access Model\", \"GPO security hardening checklist\".", "industry": "Design real enterprise identity/Zero Trust architecture as an identity security architect. Search: \"Zero Trust architecture NIST 800-207\", \"identity security architect role\".", "national": "Design identity architecture for a national-scale enterprise/government network. Search: \"government enterprise identity architecture project\".", "world": "Help shape global Zero Trust standards (NIST/ISO). Search: \"NIST Zero Trust Architecture 800-207\", \"ISO 27001 identity management\"."}}, {"lv": 22, "focus": "AD attacks", "checkpoint": false, "tiers": {"base": "Kerberoast + AS-REP roast a lab.", "hard": "Crack the hashes; pivot to a second AD lab with them.", "insane": "Execute a full Golden Ticket + DCSync chain, unaided.", "senior": "Execute a full internal AD attack chain inside a structured Pro Lab environment. Search: \"Hack The Box Pro Labs Dante\", \"Certified Red Team Professional CRTP syllabus\", \"mimikatz DCSync attack\".", "industry": "Lead real authorized internal AD compromises for a client as a professional red teamer. Search: \"CRTO Certified Red Team Operator\", \"Mandiant red team services\".", "national": "Lead red team engagements for national critical infrastructure. Search: \"critical infrastructure red team national program\".", "world": "Present novel AD attack research at Black Hat/DEF CON. Search: \"Black Hat Active Directory research talks\"."}}, {"lv": 23, "focus": "Linux privesc", "checkpoint": false, "tiers": {"base": "Privesc on 3 Linux boxes.", "hard": "No linpeas or automated enum — manual only.", "insane": "Build your own vulnerable VM and find your own unpublished misconfig.", "senior": "Clear an OSCP-style Linux privesc gauntlet fully manual, timed. Search: \"GTFOBins\", \"Linux privilege escalation checklist\", \"Offsec Proving Grounds Linux boxes\".", "industry": "Discover a novel Linux privesc CVE or pursue OffSec OSEE-level exploit-dev mastery. Search: \"OffSec OSEE Exploit Expert\", \"Linux kernel privilege escalation CVE\".", "national": "Credited nationally for a Linux kernel CVE disclosure. Search: \"national CERT Linux kernel CVE credit\".", "world": "Listed in the Linux kernel / major distro security hall of fame. Search: \"Linux kernel security researcher acknowledgments\"."}}, {"lv": 24, "focus": "Windows privesc", "checkpoint": false, "tiers": {"base": "Privesc on 3 Windows boxes.", "hard": "No winpeas — manual enumeration only.", "insane": "Build your own vulnerable Windows VM and find your own bug.", "senior": "Clear an OSCP-style Windows privesc gauntlet fully manual, timed. Search: \"PayloadsAllTheThings Windows Privilege Escalation\", \"Windows privesc cheat sheet\", \"JAWS enumeration script\".", "industry": "Discover and publish a novel Windows privesc technique/CVE recognized by the research community. Search: \"Windows privesc CVE research\", \"Elastic Security Labs research\".", "national": "Credited by a national CERT for a Windows vuln disclosure. Search: \"national CERT Microsoft vulnerability disclosure\".", "world": "Credited in Microsoft's global MSRC acknowledgments. Search: \"Microsoft MSRC researcher acknowledgments\"."}}, {"lv": 25, "focus": "Binary exploitation intro", "checkpoint": false, "tiers": {"base": "Complete a basic BOF lab.", "hard": "Bypass a basic stack canary or ASLR.", "insane": "Recreate a real public CVE exploit end-to-end from scratch.", "senior": "Solve intermediate binary exploitation challenges with canary + ASLR bypass. Search: \"pwn.college\", \"pwnable.kr\", \"ROP chain exploit tutorial ret2libc\".", "industry": "Compete in DEF CON CTF qualifiers/finals pwn category, or discover a real 0-day. Search: \"DEF CON CTF quals pwn challenges\", \"Pwn2Own competition\".", "national": "National CTF pwn-category champion. Search: \"national CTF pwn category results\".", "world": "Win at Pwn2Own. Search: \"Pwn2Own competition winners history\"."}}, {"lv": 26, "focus": "Password attacks", "checkpoint": false, "tiers": {"base": "Crack 3 hash types with hashcat.", "hard": "Crack one with a self-built rule-based mask attack.", "insane": "Crack a policy-compliant password using a context-informed targeted wordlist.", "senior": "Run an authorized password-spray / credential audit assessment with enterprise tooling. Search: \"hashcat rule-based attacks\", \"password spraying MITRE ATT&CK T1110.003\", \"DomainPasswordSpray tool\".", "industry": "Lead enterprise credential-security assessments as a professional red teamer. Search: \"credential access assessment MITRE ATT&CK\".", "national": "Lead credential-security assessments for national-scale organizations. Search: \"national scale credential security assessment\".", "world": "Core contributor to hashcat/John the Ripper, recognized globally. Search: \"hashcat contributors github\", \"John the Ripper development team\"."}}, {"lv": 27, "focus": "Pivoting / lateral — movement", "checkpoint": false, "tiers": {"base": "Complete a multi-host pivot chain lab.", "hard": "Pivot 3+ hops, native tools only.", "insane": "Pivot 5+ hops across mixed OS environments, fully manual routing.", "senior": "Perform multi-hop pivoting through a segmented network in an authorized red team exercise. Search: \"Ligolo-ng pivoting tool\", \"Chisel tunneling red team\", \"SOCKS proxy pivoting proxychains\".", "industry": "Execute pivoting across a large-scope enterprise red team engagement professionally. Search: \"CRTO red team pivoting\", \"internal network penetration test\".", "national": "Lead national-level red team engagements across critical infrastructure. Search: \"national critical infrastructure red team program\".", "world": "Present red-team tradecraft research at Black Hat globally. Search: \"Black Hat red team tradecraft talks\"."}}, {"lv": 28, "focus": "Report writing", "checkpoint": false, "tiers": {"base": "Write a full PTES-style client report.", "hard": "Have it red-teamed by a peer/AI; fix every flag.", "insane": "Present it live to a mock client panel and defend it under hostile questioning.", "senior": "Write a report to a real client/industry standard and have it peer-reviewed by a working pentester. Search: \"PTES Penetration Testing Execution Standard\", \"OSCP report template\", \"sample penetration test report PDF\".", "industry": "Deliver client-facing reports at a Big 4 / top boutique pentest firm standard. Search: \"NCC Group sample penetration test report\", \"Big 4 penetration testing services\".", "national": "Your report format adopted as a national industry standard. Search: \"national penetration testing reporting standard\".", "world": "Your methodology cited by a global framework (MITRE ATT&CK/PTES). Search: \"MITRE ATT&CK contributors\", \"PTES standard history\"."}}, {"lv": 29, "focus": "Bug bounty", "checkpoint": false, "tiers": {"base": "Submit your first real bounty report.", "hard": "Include a working PoC script or video.", "insane": "Get an actual bounty *payout*, not just an accepted submission.", "senior": "Earn a bounty payout and build a public researcher track record. Search: \"HackerOne researcher leaderboard\", \"Bugcrowd researcher program\", \"bug bounty hunting methodology\".", "industry": "Become a full-time bug bounty hunter with consistent income, Top 10 on a major platform. Search: \"top bug bounty hunters income\", \"HackerOne hall of fame\".", "national": "#1 bug bounty hunter in your country. Search: \"top bug bounty hunter country ranking\".", "world": "Global #1 all-time earnings on HackerOne/Bugcrowd. Search: \"highest paid bug bounty hunters world\"."}}, {"lv": 30, "focus": "LOGIC CHECKPOINT — — LV30 PASS", "checkpoint": true, "tiers": {"base": "Full pentest chain end-to-end + LV30 pass conditions.", "hard": "Same checkpoint on a blind box, under a fixed time limit.", "insane": "Complete a real OSCP-equivalent exam, or pass a real interview loop and get an offer.", "senior": "Pass OSCP (or equivalent) and/or land a paid penetration tester, SOC analyst, or red team role. Search: \"OffSec OSCP certification exam\", \"entry level penetration tester job requirements\", \"junior SOC analyst job description\".", "industry": "OSCE3-level (OSCP+OSWE+OSEP) Senior Penetration Tester / Red Team Lead at a real security firm. Search: \"OffSec OSCE3 requirements\", \"senior penetration tester job listing\".", "national": "Recognized as a top national penetration tester / CISO-track leader. Search: \"national cybersecurity leadership recognition\".", "world": "Globally recognized security researcher/executive (Black Hat Review Board, global CISO). Search: \"Black Hat Review Board members\", \"Fortune 500 CISO hiring\"."}}]}, "quant": {"name": "Quant Track", "levels": [{"lv": 1, "focus": "Probability", "checkpoint": false, "tiers": {"base": "Solve 20 problems + code a Monte Carlo sim.", "hard": "Use the sim on a problem with no closed-form solution.", "insane": "Solve a competition-style (Jane-Street-tier) puzzle set, pen & paper, 60-min limit.", "senior": "Solve real quant-desk interview probability sets under timed conditions. Search: \"Jane Street quant interview questions\", \"quant interview probability brainteasers\", \"Heard on the Street quant book\".", "industry": "Solve real Jane Street / Two Sigma onsite-level puzzles; place in a public quant puzzle competition. Search: \"Jane Street puzzle archive\", \"Two Sigma quant interview questions\".", "national": "Place on a national Math/Quant Olympiad team. Search: \"national Mathematical Olympiad team selection\".", "world": "IMO medalist tier, or top of Jane Street's public puzzle leaderboard. Search: \"International Mathematical Olympiad IMO\", \"Jane Street puzzle leaderboard\"."}}, {"lv": 2, "focus": "Statistics", "checkpoint": false, "tiers": {"base": "Compute stats on a real dataset.", "hard": "Correct your analysis for a skewed/non-normal distribution.", "insane": "Detect and prove a bias a clean-looking analysis would miss.", "senior": "Run a rigorous bias/robustness audit matching real quant-research standards. Search: \"bootstrap confidence intervals statistics\", \"Newey-West robust standard errors\", \"statistical robustness checks finance\".", "industry": "Publish statistical research referenced by practitioners (SSRN/blog). Search: \"SSRN quantitative finance papers\", \"quantitative research blog\".", "national": "Publish in a national statistics/economics journal. Search: \"national statistical association journal submission\".", "world": "Publish in a top global journal (Journal of Finance / JFE). Search: \"Journal of Finance submissions\", \"Journal of Financial Economics\"."}}, {"lv": 3, "focus": "Python for data", "checkpoint": false, "tiers": {"base": "Clean a messy real-world CSV.", "hard": "Clean gaps/dupes/corruption, dropping <5% of data.", "insane": "Build the entire cleaning pipeline in raw Python — no pandas.", "senior": "Build a production-grade, tested ETL pipeline at scale. Search: \"Polars vs pandas performance benchmark\", \"pytest data pipeline testing\", \"great expectations data validation\".", "industry": "Contribute to a major open-source quant/data library (pandas, Polars, QuantLib). Search: \"QuantLib contributor guide\", \"pandas open source contribution guide\".", "national": "Recognized speaker at a national tech conference (PyCon country edition). Search: \"PyCon national conference call for speakers\".", "world": "Core maintainer of a globally used library (pandas/NumPy). Search: \"pandas core developer team\", \"NumPy core developers\"."}}, {"lv": 4, "focus": "Linear algebra", "checkpoint": false, "tiers": {"base": "Implement matrix ops from scratch.", "hard": "Implement PCA using only your own matrix functions.", "insane": "Implement your own eigenvalue solver (QR algorithm) from scratch.", "senior": "Benchmark your solvers against numpy/LAPACK and understand numerical stability. Search: \"LAPACK QR algorithm\", \"numerical linear algebra Trefethen Bau\", \"condition number matrix stability\".", "industry": "Implement production-grade numerical methods used in a real pricing/risk engine. Search: \"QuantLib numerical methods\", \"quant numerical computing library\".", "national": "Place in a national math/numerical-methods competition. Search: \"national mathematics competition results\".", "world": "Contribute to LAPACK/BLAS or a globally used numerical library. Search: \"LAPACK contributors\", \"BLAS library development\"."}}, {"lv": 5, "focus": "Calculus refresh", "checkpoint": false, "tiers": {"base": "Implement gradient descent by hand.", "hard": "Add momentum; compare convergence speed.", "insane": "Derive and implement Newton's method; compare vs gradient descent.", "senior": "Implement a second-order optimizer (L-BFGS) matching real ML/quant libraries. Search: \"L-BFGS optimization scipy.optimize\", \"convex optimization Boyd Vandenberghe\", \"quasi-Newton methods\".", "industry": "Build optimization used in a real portfolio optimizer or large-scale ML training system. Search: \"cvxpy convex optimization\", \"production portfolio optimization system\".", "national": "Place in a national operations research competition. Search: \"national operations research competition\".", "world": "Contribute to a globally used optimization solver (Gurobi/CVXPY). Search: \"Gurobi Optimization careers\", \"CVXPY contributors\"."}}, {"lv": 6, "focus": "Market fundamentals", "checkpoint": false, "tiers": {"base": "Document order types with real examples.", "hard": "Simulate P&L; difference: market vs limit orders.", "insane": "Build a mini order-matching engine simulating an exchange.", "senior": "Build a limit order book matching engine reflecting real exchange logic. Search: \"limit order book matching engine python\", \"price-time priority FIFO matching\", \"pro-rata matching algorithm\".", "industry": "Understand/replicate real exchange matching-engine protocols as a market-structure analyst. Search: \"NASDAQ ITCH protocol\", \"exchange matching engine design\".", "national": "Work as a market-structure analyst at a national exchange. Search: \"national stock exchange market structure analyst\".", "world": "Work at/consult for a global exchange on matching-engine design (NASDAQ/CME/LSE). Search: \"NASDAQ matching engine careers\", \"CME Globex architecture\"."}}, {"lv": 7, "focus": "Time series basics", "checkpoint": false, "tiers": {"base": "Test a real series for stationarity.", "hard": "Difference it to stationary; re-test.", "insane": "Fit an ARIMA/GARCH model from scratch and justify every parameter.", "senior": "Fit and validate ARIMA/GARCH on real market data, benchmarked against published research. Search: \"GARCH model volatility forecasting\", \"statsmodels ARIMA tutorial\", \"arch package python GARCH\".", "industry": "Publish a volatility-forecasting model referenced in industry research (SSRN working paper). Search: \"volatility forecasting research paper SSRN\".", "national": "Present at a national economics/finance conference. Search: \"national finance conference call for papers\".", "world": "Present at NBER/AFA or publish in a top global journal. Search: \"American Finance Association AFA conference\", \"NBER working papers\"."}}, {"lv": 8, "focus": "Data acquisition", "checkpoint": false, "tiers": {"base": "Pull and clean price data via API.", "hard": "Handle rate limits/retries/gaps automatically.", "insane": "Build a real-time streaming (websocket) data pipeline, not batch pulls.", "senior": "Build a real-time market data pipeline against a live broker/exchange API. Search: \"Interactive Brokers API Python ib_insync\", \"Polygon.io websocket API\", \"Binance websocket market data\".", "industry": "Build a production low-latency market-data feed handler used in real trading. Search: \"low latency market data feed handler\", \"FIX protocol market data\".", "national": "Build data infrastructure at a national financial data provider. Search: \"national financial data provider engineering role\".", "world": "Build infrastructure at a global data vendor (Bloomberg/Refinitiv). Search: \"Bloomberg market data engineering careers\", \"Refinitiv data infrastructure\"."}}, {"lv": 9, "focus": "EDA & visualization", "checkpoint": false, "tiers": {"base": "Full EDA report on a market dataset.", "hard": "Find a non-obvious anomaly that changes your conclusion.", "insane": "Find a genuinely novel, publishable-quality insight in public market data.", "senior": "Produce research-grade EDA matching a real quant research-desk standard. Search: \"quant research notebook best practices\", \"exploratory data analysis finance template\".", "industry": "Produce research cited by a real quant fund or published on arXiv q-fin/SSRN. Search: \"arXiv q-fin quantitative finance papers\".", "national": "Research featured in a national fintech publication. Search: \"national fintech publication research feature\".", "world": "Research published on arXiv q-fin / top-downloaded on SSRN. Search: \"arXiv q-fin top papers\", \"SSRN top downloaded finance papers\"."}}, {"lv": 10, "focus": "FOUNDATION — CHECKPOINT", "checkpoint": true, "tiers": {"base": "Full dataset analysis end-to-end + findings.", "hard": "Redo it on a different asset class in half the time.", "insane": "Present your analysis to a real trader/quant (or realistic mock) and survive Q&A.", "senior": "Complete a real research project on a public quant research platform. Search: \"WorldQuant BRAIN platform\", \"QuantConnect research environment\", \"Kaggle finance competitions\".", "industry": "Complete a real quant research internship or get research reviewed by practitioners. Search: \"quant research internship application\", \"arXiv q-fin submission process\".", "national": "Complete a national-level quant research fellowship/internship. Search: \"national quant research fellowship program\".", "world": "Intern at a top global quant fund (Jane Street/Two Sigma/DE Shaw). Search: \"Jane Street internship\", \"Two Sigma internship program\"."}}, {"lv": 11, "focus": "Returns & volatility", "checkpoint": false, "tiers": {"base": "Compute returns/vol/correlation across 5 assets.", "hard": "Spot volatility clustering by eye, pre-GARCH.", "insane": "Build and calibrate a full GARCH model for vol forecasting.", "senior": "Calibrate GARCH(1,1) and validate forecasts against realized volatility. Search: \"realized volatility vs GARCH forecast comparison\", \"arch python package GARCH(1,1)\".", "industry": "Build a vol-forecasting model used on a real options/vol-trading desk. Search: \"volatility trading desk strategy\", \"implied vs realized vol arbitrage\".", "national": "Build vol models used at a national bank/brokerage. Search: \"national bank quant desk role\".", "world": "Build vol models at a top global options market maker (Optiver/IMC/Susquehanna). Search: \"Optiver quant trader\", \"IMC Trading quant researcher\"."}}, {"lv": 12, "focus": "Regression", "checkpoint": false, "tiers": {"base": "Run OLS; validate residuals.", "hard": "Correct for heteroskedasticity or multicollinearity.", "insane": "Build a ridge/lasso model and statistically justify the regularization.", "senior": "Validate a regularized model with real time-series cross-validation, avoiding leakage. Search: \"scikit-learn TimeSeriesSplit\", \"ridge lasso regression finance\", \"walk-forward cross-validation\".", "industry": "Build predictive models feeding a real signal-research pipeline at a fund. Search: \"quant signal research pipeline\", \"factor investing research process\".", "national": "Signal research adopted at a national asset manager. Search: \"national asset manager quant research role\".", "world": "Signal research adopted at a top-tier global fund (AQR/Renaissance/Two Sigma). Search: \"AQR Capital Management careers\", \"Renaissance Technologies careers\"."}}, {"lv": 13, "focus": "Hypothesis testing", "checkpoint": false, "tiers": {"base": "Test a real trading signal.", "hard": "Correct for multiple-testing bias after 10+ signals.", "insane": "Run a fully pre-registered study — hypothesis locked before seeing data.", "senior": "Design a pre-registered signal test following real quant-research governance. Search: \"multiple testing correction Bonferroni Benjamini-Hochberg\", \"pre-registration research design finance\".", "industry": "Run signal validation matching real fund research-governance standards (AQR/Two Sigma style). Search: \"AQR Capital research papers\", \"Two Sigma research methodology\".", "national": "Research governance adopted at a national fund. Search: \"national hedge fund research governance process\".", "world": "Research rigor matching Renaissance/Citadel-level standards. Search: \"Citadel research process\", \"Renaissance Technologies research culture\"."}}, {"lv": 14, "focus": "Backtesting fundamentals", "checkpoint": false, "tiers": {"base": "Build a leak-free walk-forward framework.", "hard": "Inject a lookahead bug, then find/prove it via testing.", "insane": "Build an event-driven backtester simulating order-by-order execution.", "senior": "Build an event-driven backtester matching industry-standard architecture. Search: \"backtrader event-driven backtesting python\", \"zipline-reloaded backtesting engine\".", "industry": "Build/maintain institutional-grade backtesting infrastructure (real fund or major OSS project). Search: \"QuantConnect LEAN engine architecture\", \"institutional backtesting infrastructure\".", "national": "Backtesting infra adopted by a national fintech/broker. Search: \"national fintech backtesting platform\".", "world": "Contribute to a globally used backtesting framework (QuantConnect LEAN/Backtrader). Search: \"QuantConnect LEAN open source contributors\"."}}, {"lv": 15, "focus": "Strategy design", "checkpoint": false, "tiers": {"base": "Code a momentum or mean-reversion strategy.", "hard": "Combine both into a regime-switching strategy.", "insane": "Design a market-neutral long/short strategy with real hedging logic.", "senior": "Design a market-neutral strategy with real hedging and risk constraints, fund-pitch quality. Search: \"market-neutral long-short equity strategy\", \"pairs trading cointegration statistical arbitrage\".", "industry": "Run a market-neutral strategy with real capital at a fund or prop shop. Search: \"market-neutral equity fund strategy\", \"prop trading firm strategies\".", "national": "Run a market-neutral book at a national prop firm. Search: \"national proprietary trading firm strategy desk\".", "world": "Run a strategy at a top global multi-strat fund (Millennium/Point72/Citadel). Search: \"Millennium Management careers\", \"Point72 Academy\", \"Citadel careers\"."}}, {"lv": 16, "focus": "Risk metrics", "checkpoint": false, "tiers": {"base": "Compute Sharpe, Sortino, max drawdown.", "hard": "Compute rolling Sharpe; explain where it degrades.", "insane": "Build a full VaR/CVaR risk dashboard, and backtest the risk model itself.", "senior": "Build a VaR/CVaR dashboard and backtest it against a real regulatory-style standard. Search: \"Value at Risk backtesting Kupiec test\", \"CVaR expected shortfall calculation\", \"Basel VaR backtesting\".", "industry": "Own a firm-wide risk-management system (VaR/CVaR) as a quantitative risk manager. Search: \"quantitative risk manager role\", \"enterprise risk management system finance\".", "national": "Risk manager role at a national bank/insurer. Search: \"national bank risk management quant role\".", "world": "Risk quant at a globally systemic bank or global regulator (Basel Committee). Search: \"Goldman Sachs risk quant careers\", \"Basel Committee on Banking Supervision\"."}}, {"lv": 17, "focus": "Costs & slippage", "checkpoint": false, "tiers": {"base": "Add a realistic transaction cost model.", "hard": "Find the cost threshold where your edge disappears.", "insane": "Model real market impact with an actual impact function, not fixed slippage.", "senior": "Model market impact using an Almgren-Chriss style function. Search: \"Almgren-Chriss market impact model\", \"transaction cost analysis TCA\".", "industry": "Build a real TCA system used by a trading desk to measure execution quality. Search: \"transaction cost analysis TCA vendor\", \"execution quality analytics\".", "national": "Build TCA for a national brokerage. Search: \"national brokerage transaction cost analysis system\".", "world": "Build TCA at a global execution/prime brokerage (Goldman/Virtu). Search: \"Virtu Financial execution technology\", \"Goldman Sachs electronic trading\"."}}, {"lv": 18, "focus": "Overfitting", "checkpoint": false, "tiers": {"base": "Run out-of-sample validation.", "hard": "Deliberately overfit, then show its OOS collapse as proof.", "insane": "Run walk-forward optimization with formal parameter-stability checks.", "senior": "Run walk-forward optimization with a deflated Sharpe ratio / parameter-stability check. Search: \"deflated Sharpe ratio Lopez de Prado\", \"walk-forward optimization overfitting finance\".", "industry": "Apply institutional-grade overfitting controls (deflated Sharpe, PBO) as standard fund practice. Search: \"probability of backtest overfitting PBO\", \"Lopez de Prado overfitting research\".", "national": "Present overfitting-control methodology at a national quant meetup/conference. Search: \"national quant finance meetup\".", "world": "Methodology referenced in globally cited research (Lopez de Prado-tier). Search: \"Marcos Lopez de Prado publications\"."}}, {"lv": 19, "focus": "Portfolio basics", "checkpoint": false, "tiers": {"base": "Build a diversified multi-asset allocation.", "hard": "Optimize via mean-variance instead of equal-weight.", "insane": "Build a full risk-parity or Black-Litterman portfolio model.", "senior": "Build a Black-Litterman or risk-parity model and benchmark vs equal-weight. Search: \"Black-Litterman model python implementation\", \"risk parity portfolio construction\".", "industry": "Construct/manage a real multi-asset portfolio professionally as a PM or portfolio-construction quant. Search: \"portfolio manager quant role\", \"risk parity fund AQR Bridgewater\".", "national": "Portfolio construction role at a national pension fund/asset manager. Search: \"national pension fund quant role\".", "world": "Portfolio construction at a global sovereign wealth fund or macro fund (Bridgewater-tier). Search: \"Bridgewater Associates careers\", \"sovereign wealth fund quant role\"."}}, {"lv": 20, "focus": "DISCIPLINE — CHECKPOINT", "checkpoint": true, "tiers": {"base": "One strategy, bias-checked, documented.", "hard": "Have someone try to break your bias-check; patch it.", "insane": "Submit your strategy to a real practitioner community and incorporate real critique.", "senior": "Submit a strategy to a real practitioner platform and incorporate feedback. Search: \"Numerai tournament submission\", \"WorldQuant BRAIN alpha submission\", \"QuantConnect community forum\".", "industry": "Get a strategy allocated real capital by a fund/prop desk, or pass a PM evaluation. Search: \"prop firm funded trader evaluation\", \"quant PM interview process\".", "national": "Funded by a national prop trading program. Search: \"national prop trading funded program\".", "world": "Funded/hired by a top global prop firm (Jane Street/Optiver/DRW/Jump). Search: \"Jump Trading careers\", \"DRW Trading careers\"."}}, {"lv": 21, "focus": "Market microstructure", "checkpoint": false, "tiers": {"base": "Analyze spread/liquidity on real order book data.", "hard": "Model how your own order size moves the market.", "insane": "Build a limit order book simulator; test strategy behavior inside it.", "senior": "Build a LOB simulator reflecting real market microstructure research. Search: \"market microstructure Hasbrouck Empirical\", \"limit order book simulator python\".", "industry": "Work with real LOB data professionally as a market-making / HFT researcher. Search: \"market making quant researcher role\", \"high frequency trading research\".", "national": "Market-making/HFT research role at a national trading firm. Search: \"national market making firm research role\".", "world": "HFT research at a top global HFT firm (Hudson River Trading/Tower/Jump). Search: \"Hudson River Trading careers\", \"Tower Research Capital careers\"."}}, {"lv": 22, "focus": "Advanced statistical tests", "checkpoint": false, "tiers": {"base": "Run stationarity/autocorrelation diagnostics.", "hard": "Fix an autocorrelation issue; re-validate.", "insane": "Detect regime change with a formal changepoint-detection method.", "senior": "Apply formal Bayesian/CUSUM changepoint detection used in real regime research. Search: \"Bayesian changepoint detection python ruptures\", \"CUSUM regime detection finance\".", "industry": "Deploy regime detection live inside a real production trading system. Search: \"regime detection live trading system deployment\".", "national": "Regime-detection work deployed at a national fund. Search: \"national fund regime detection deployment\".", "world": "Regime research matching global macro-fund standards (Bridgewater/Man Group). Search: \"Man Group AHL quant research\"."}}, {"lv": 23, "focus": "ML for finance (optional)", "checkpoint": false, "tiers": {"base": "Build a leak-free feature set.", "hard": "Shuffle/future-shift features; confirm collapse.", "insane": "Build a full ML pipeline with walk-forward retraining, leakage-proofed at every stage.", "senior": "Build a leakage-proof pipeline using purged K-fold CV, per real quant-research practice. Search: \"purged k-fold cross-validation finance\", \"Advances in Financial Machine Learning Lopez de Prado\".", "industry": "Deploy a leakage-proof ML pipeline live at a fund as an ML quant researcher. Search: \"machine learning quant researcher job\", \"ML in finance production pipeline\".", "national": "ML quant role at a national bank/fintech. Search: \"national bank machine learning quant role\".", "world": "ML quant researcher at a top global fund/fintech (Two Sigma/Citadel/DE Shaw). Search: \"Two Sigma machine learning research\", \"D.E. Shaw quant careers\"."}}, {"lv": 24, "focus": "Factor models", "checkpoint": false, "tiers": {"base": "Decompose returns into factor exposures.", "hard": "Build one custom factor; test explanatory power.", "insane": "Replicate a known academic factor (e.g. Fama-French) from raw data.", "senior": "Replicate the Fama-French 5-factor model from raw data. Search: \"Fama-French 5 factor data library Kenneth French\", \"factor model replication python\".", "industry": "Build/maintain a proprietary factor model at a real asset manager. Search: \"quantitative equity research factor model job\", \"BARRA factor model\".", "national": "Factor model built for a national asset manager. Search: \"national asset manager factor model role\".", "world": "Factor model matching global standard-setters (MSCI Barra/AQR). Search: \"MSCI Barra factor models\", \"AQR factor research\"."}}, {"lv": 25, "focus": "Regime testing", "checkpoint": false, "tiers": {"base": "Test performance across 2+ regimes.", "hard": "Test across a real crisis period (2008/2020).", "insane": "Build a regime-detection model (HMM or similar) that adapts strategy automatically.", "senior": "Build an HMM-based regime-detection model that adapts allocation automatically. Search: \"hidden Markov model regime detection finance\", \"hmmlearn python tutorial\".", "industry": "Run an adaptive regime-switching strategy live with real capital. Search: \"regime switching trading strategy live deployment\".", "national": "Regime-adaptive strategy running at a national fund. Search: \"national fund regime adaptive strategy\".", "world": "Regime-adaptive strategy at a top global macro fund. Search: \"global macro hedge fund strategy Bridgewater\"."}}, {"lv": 26, "focus": "Execution mechanics", "checkpoint": false, "tiers": {"base": "Simulate realistic order execution/slippage.", "hard": "Model partial fills' effect on realized P&L.", "insane": "Build a smart order router simulating optimal execution across venues.", "senior": "Build a smart order router simulating VWAP/TWAP/POV execution across venues. Search: \"VWAP TWAP execution algorithms\", \"smart order routing SOR\".", "industry": "Build/own a smart order router at a real broker or exchange as an execution quant. Search: \"execution quant researcher job\", \"algorithmic trading execution engineer\".", "national": "Execution engineer at a national broker/exchange. Search: \"national broker execution engineer role\".", "world": "Execution engineer at a global exchange/broker (NASDAQ/ICE/Goldman). Search: \"ICE Intercontinental Exchange careers\", \"NASDAQ execution technology\"."}}, {"lv": 27, "focus": "Paper trading", "checkpoint": false, "tiers": {"base": "Run your strategy paper-live for 2 weeks.", "hard": "Run it blind; review P&L only at the end.", "insane": "Run real (small) live capital, not paper, for 2+ weeks.", "senior": "Trade real (small) live capital under prop-firm-style risk rules. Search: \"prop trading firm evaluation rules\", \"Alpaca live trading API python\".", "industry": "Trade real capital professionally as a funded trader or junior portfolio manager. Search: \"funded trader prop firm\", \"junior portfolio manager quant role\".", "national": "Funded trader at a national prop firm. Search: \"national prop firm funded trader program\".", "world": "Funded/junior PM at a top global fund (Millennium/Citadel/Point72). Search: \"Millennium Management portfolio manager\", \"Citadel investment analyst\"."}}, {"lv": 28, "focus": "Research report", "checkpoint": false, "tiers": {"base": "Write a hedge-fund-style strategy writeup.", "hard": "Review it against a real fund's due-diligence checklist.", "insane": "Get it reviewed/critiqued by an actual finance professional or practitioner forum.", "senior": "Have your writeup reviewed against a real fund due-diligence checklist or by a working quant. Search: \"hedge fund due diligence questionnaire template\", \"quant strategy writeup example\".", "industry": "Publish research reviewed/cited by real fund practitioners (SSRN, journal, or internal fund research). Search: \"SSRN quantitative finance working paper\", \"Journal of Portfolio Management\".", "national": "Research published/cited by a national finance industry body. Search: \"national finance industry association research\".", "world": "Research published in a top global journal (Journal of Finance/RFS) or cited by top funds. Search: \"Review of Financial Studies\", \"Journal of Finance top papers\"."}}, {"lv": 29, "focus": "Competition / original — work", "checkpoint": false, "tiers": {"base": "Submit to Kaggle/QuantConnect or publish a strategy.", "hard": "Place top 50%, or get peer-reviewed by a practitioner.", "insane": "Place top 10%, or get accepted into a real internship/fellowship pipeline.", "senior": "Place top 10% in a recognized competition or land a real internship/fellowship. Search: \"Numerai tournament leaderboard\", \"WorldQuant Challenge\", \"quant internship application\".", "industry": "Win or place highly in a globally recognized quant competition (WorldQuant, Jane Street, Optiver). Search: \"WorldQuant Challenge winners\", \"Jane Street internship competition\".", "national": "Win a national-level quant/data-science competition. Search: \"national data science competition winner\".", "world": "Win/place top in a globally recognized competition (Jane Street comp/WorldQuant/Kaggle Grandmaster). Search: \"Kaggle Grandmaster ranking\", \"WorldQuant global challenge results\"."}}, {"lv": 30, "focus": "LOGIC CHECKPOINT — — LV30 PASS", "checkpoint": true, "tiers": {"base": "Present strategy w/ full statistical validation.", "hard": "Defend it live — 30+ min mock IC pitch, adversarial Q&A.", "insane": "Pass a real quant interview loop or a serious recognized competition/cert.", "senior": "Pass a real quant interview loop (mental math + probability + stats + coding) or land a quant researcher/analyst role. Search: \"quant interview prep questions\", \"quant researcher job requirements entry level\", \"CFA vs quant career path\".", "industry": "Land a quant researcher/trader role at a top-tier fund (Jane Street, Citadel, Two Sigma, DE Shaw, Optiver). Search: \"quant researcher hiring Citadel Jane Street\", \"CFA FRM quant career path\".", "national": "Recognized top quant professional in your country. Search: \"top quant professionals national ranking\".", "world": "Quant researcher/PM at a globally elite fund (Jane Street/Citadel/Renaissance/Two Sigma/DE Shaw/Optiver). Search: \"Jane Street quant researcher hiring\", \"Renaissance Technologies hiring\"."}}]}}</script>
+<script>
+/* ============ Data & constants ============ */
+const DATA = JSON.parse(document.getElementById('void-data').textContent);
+
+const TIERS = [
+  {key:'base',     label:'Base · Junior', xp:10,  color:'#33f2e0'},
+  {key:'hard',     label:'Hard Mode',     xp:20,  color:'#7fe6dc'},
+  {key:'insane',   label:'Insane Mode',   xp:35,  color:'#ffd9a0'},
+  {key:'senior',   label:'Senior',        xp:50,  color:'#8be08b'},
+  {key:'industry', label:'Industry / Expert', xp:80, color:'#ffd166'},
+  {key:'national', label:'National Class', xp:120, color:'#8ab4ff'},
+  {key:'world',    label:'World Class',   xp:200, color:'#e08bff'},
+];
+const TIER_MAX_XP = TIERS.reduce((a,t)=>a+t.xp,0);
+const TRACK_MAX_XP = TIER_MAX_XP * 30;
+const TOTAL_MAX_XP = TRACK_MAX_XP * 2;
+
+const RANKS = [
+  {min:0,    name:'Initiate'},
+  {min:.08,  name:'Operator'},
+  {min:.18,  name:'Specialist'},
+  {min:.30,  name:'Senior Operator'},
+  {min:.45,  name:'Industry Operator'},
+  {min:.62,  name:'National-Class Operator'},
+  {min:.82,  name:'World-Class Operator'},
+  {min:.98,  name:'VOID'},
+];
+
+const RING_QUESTIONS = [
+  ["①","Foundation","Can I explain this block's core concepts without notes?"],
+  ["②","Discipline","Did I execute my process consistently, or skip/rush under pressure?"],
+  ["③","Logic","When something broke, did I reason to the cause, or guess/copy a fix?"],
+  ["④","Execution","What did I build or solve that actually worked, unassisted?"],
+  ["⑤","Analysis","Did I compare options, or take the first approach that worked?"],
+  ["⑥","Research","Did I find anything not explicitly taught to me this block?"],
+  ["⑦","Strategy","Did I make a call under uncertainty that held up (or learn from it failing)?"],
+  ["⑧","Creation","Did I build something original, or only follow others' methods?"],
+  ["⑨","Mastery","Could I now solve a harder, unfamiliar version of this block's problems?"],
+  ["⑩","Integration","Did I connect this to a prior block (cyber ↔ quant, math ↔ code)?"],
+];
+const RING_TIERS = ["—","Awakened","Stable","Refined","Superior","Transcendent"];
+const CHECKPOINTS = [10,20,30];
+
+const STORAGE_KEY = 'void-soul-progress-v1';
+const RING_KEY = 'void-soul-rings-v1';
+
+/* ============ State ============ */
+let state = loadState();
+let ringState = loadRingState();
+let currentTrack = 'cyber';
+let openLevels = new Set();
+let pendingCheckpoint = null;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {cyber:{}, quant:{}};
+  }catch(e){ return {cyber:{}, quant:{}}; }
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function loadRingState(){
+  try{
+    const raw = localStorage.getItem(RING_KEY);
+    return raw ? JSON.parse(raw) : {cyber:{}, quant:{}};
+  }catch(e){ return {cyber:{}, quant:{}}; }
+}
+function saveRingState(){
+  try{ localStorage.setItem(RING_KEY, JSON.stringify(ringState)); }catch(e){}
+}
+
+function isChecked(track, lv, tierKey){
+  return !!(state[track] && state[track][lv] && state[track][lv][tierKey]);
+}
+function toggleCheck(track, lv, tierKey){
+  if(!state[track]) state[track] = {};
+  if(!state[track][lv]) state[track][lv] = {};
+  state[track][lv][tierKey] = !state[track][lv][tierKey];
+  saveState();
+  renderAll();
+  if(state[track][lv][tierKey]) showToast('+' + TIERS.find(t=>t.key===tierKey).xp + ' XP logged');
+}
+
+/* ============ XP / rank ============ */
+function trackXP(track){
+  let xp = 0;
+  const lvls = DATA[track].levels;
+  for(const lv of lvls){
+    const rec = state[track] && state[track][lv.lv];
+    if(!rec) continue;
+    for(const t of TIERS){ if(rec[t.key]) xp += t.xp; }
+  }
+  return xp;
+}
+function totalXP(){ return trackXP('cyber') + trackXP('quant'); }
+
+function rankForFraction(f){
+  let r = RANKS[0];
+  for(const item of RANKS){ if(f >= item.min) r = item; }
+  return r.name;
+}
+
+/* ============ Rendering ============ */
+function setTrack(t){
+  currentTrack = t;
+  document.querySelectorAll('.tab').forEach(el=>{
+    el.classList.toggle('active', el.dataset.track === t);
+  });
+  document.getElementById('trackName').textContent = DATA[t].name;
+  document.getElementById('trackDesc').textContent = t === 'cyber'
+    ? 'Networking to full pentest chains — offensive security, LV1 through LV30.'
+    : 'Probability to a live quant interview loop — markets, stats, and strategy, LV1 through LV30.';
+  renderList();
+}
+
+function renderHeader(){
+  const total = totalXP();
+  const frac = TOTAL_MAX_XP ? total/TOTAL_MAX_XP : 0;
+  const circumference = 226.2;
+  const offset = circumference * (1 - Math.min(frac,1));
+  document.getElementById('reactorFg').setAttribute('stroke-dashoffset', offset.toFixed(1));
+  document.getElementById('reactorPct').textContent = Math.round(frac*100) + '%';
+  document.getElementById('rankLabel').textContent = rankForFraction(frac);
+  document.getElementById('xpLabel').textContent = total.toLocaleString() + ' / ' + TOTAL_MAX_XP.toLocaleString() + ' XP';
+
+  const cyberFrac = TRACK_MAX_XP ? trackXP('cyber')/TRACK_MAX_XP : 0;
+  const quantFrac = TRACK_MAX_XP ? trackXP('quant')/TRACK_MAX_XP : 0;
+  document.getElementById('barCyber').style.width = Math.round(cyberFrac*100) + '%';
+  document.getElementById('barQuant').style.width = Math.round(quantFrac*100) + '%';
+}
+
+function levelCompletedCount(track, lv){
+  const rec = state[track] && state[track][lv];
+  if(!rec) return 0;
+  return TIERS.reduce((a,t)=>a + (rec[t.key] ? 1 : 0), 0);
+}
+
+function renderList(){
+  const container = document.getElementById('levelList');
+  container.innerHTML = '';
+  container.setAttribute('data-track', currentTrack);
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const levels = DATA[currentTrack].levels;
+
+  for(const lvl of levels){
+    if(q){
+      const hay = (lvl.lv + ' ' + lvl.focus).toLowerCase();
+      if(!hay.includes(q)) continue;
+    }
+    const done = levelCompletedCount(currentTrack, lvl.lv);
+    const isOpen = openLevels.has(currentTrack + '-' + lvl.lv);
+    const isComplete = done === TIERS.length;
+
+    const card = document.createElement('div');
+    card.className = 'lvl' + (lvl.checkpoint ? ' checkpoint' : '') + (isOpen ? ' open' : '') + (isComplete ? ' complete' : '');
+
+    const circumference = 2 * Math.PI * 14;
+    const fillFrac = done / TIERS.length;
+    const dashoffset = circumference * (1 - fillFrac);
+
+    card.innerHTML = `
+      <div class="lvl-head" onclick="toggleLevel('${lvl.lv}')" role="button" tabindex="0"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleLevel('${lvl.lv}')}">
+        <div class="lvl-num">LV${String(lvl.lv).padStart(2,'0')}</div>
+        <div class="lvl-title">
+          <div class="lvl-focus">${escapeHtml(lvl.focus)}${lvl.checkpoint ? ' ⚠' : ''}</div>
+          <div class="lvl-meta">${done}/${TIERS.length} tiers logged${lvl.checkpoint ? ' · CHECKPOINT · run Ring Assessment' : ''}</div>
+        </div>
+        <div class="lvl-ring">
+          <svg width="34" height="34" viewBox="0 0 34 34">
+            <circle class="lvl-ring-bg" cx="17" cy="17" r="14"/>
+            <circle class="lvl-ring-fg" cx="17" cy="17" r="14" stroke-dasharray="${circumference.toFixed(1)}" stroke-dashoffset="${dashoffset.toFixed(1)}"/>
+          </svg>
+          <div class="lvl-ring-txt">${done}</div>
+        </div>
+        <svg class="chev" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="lvl-body">
+        <div class="lvl-body-inner">
+          ${lvl.checkpoint ? `<button class="cp-btn" onclick="event.stopPropagation();openRingModal(${lvl.lv})">⟲ Run Ring Assessment — LV${lvl.lv}</button>` : ''}
+          ${TIERS.map(t => tierRowHtml(lvl, t)).join('')}
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  }
+
+  if(container.children.length === 0){
+    container.innerHTML = '<p style="color:var(--text-lo); font-family:\'JetBrains Mono\',monospace; font-size:13px; padding:20px 0;">No levels match “' + escapeHtml(q) + '”.</p>';
+  }
+}
+
+function tierRowHtml(lvl, t){
+  const checked = isChecked(currentTrack, lvl.lv, t.key);
+  const id = `chk-${currentTrack}-${lvl.lv}-${t.key}`;
+  return `
+    <label class="tier-row" for="${id}">
+      <input type="checkbox" class="tier-check" id="${id}" style="--tier-color:${t.color}"
+             ${checked ? 'checked' : ''} onchange="toggleCheck('${currentTrack}', ${lvl.lv}, '${t.key}')">
+      <div class="tier-txt">
+        <div class="tier-label" style="--tier-color:${t.color}; color:${t.color}">${t.label} <span class="xp">+${t.xp}xp</span></div>
+        <div class="tier-desc ${checked ? 'done' : ''}">${escapeHtml(lvl.tiers[t.key])}</div>
+      </div>
+    </label>
+  `;
+}
+
+function toggleLevel(lv){
+  const key = currentTrack + '-' + lv;
+  if(openLevels.has(key)) openLevels.delete(key); else openLevels.add(key);
+  renderList();
+  // re-scroll to keep the header in view roughly
+}
+
+function renderAll(){
+  renderHeader();
+  renderList();
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ============ Ring Assessment modal ============ */
+function openRingModal(lv){
+  pendingCheckpoint = lv;
+  document.getElementById('ringModalTitle').textContent = `Ring Assessment — ${DATA[currentTrack].name} · LV${lv}`;
+  const existing = (ringState[currentTrack] && ringState[currentTrack][lv]) || {};
+  const qwrap = document.getElementById('ringQuestions');
+  qwrap.innerHTML = RING_QUESTIONS.map(([num,name,text], i) => `
+    <div class="ring-q">
+      <div class="ring-q-head"><span class="ring-q-num mono">${num}</span><span class="ring-q-name">${name}</span></div>
+      <div class="ring-q-text">${text}</div>
+      <select class="ring-select" id="ring-sel-${i}">
+        ${RING_TIERS.map((rt,ri) => `<option value="${ri}" ${((existing[i]||0) == ri) ? 'selected' : ''}>${rt}</option>`).join('')}
+      </select>
+    </div>
+  `).join('');
+  document.getElementById('ringModal').classList.add('open');
+}
+function closeRingModal(){
+  document.getElementById('ringModal').classList.remove('open');
+  pendingCheckpoint = null;
+}
+function saveRingAssessment(){
+  if(pendingCheckpoint == null) return;
+  const rec = {};
+  RING_QUESTIONS.forEach((_, i) => {
+    rec[i] = parseInt(document.getElementById('ring-sel-' + i).value, 10);
+  });
+  if(!ringState[currentTrack]) ringState[currentTrack] = {};
+  ringState[currentTrack][pendingCheckpoint] = rec;
+  saveRingState();
+  closeRingModal();
+  showToast('Ring snapshot saved for LV' + pendingCheckpoint);
+}
+
+/* ============ Misc ============ */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+function resetProgress(){
+  if(!confirm('Reset ALL progress (both tracks) and ring snapshots? This cannot be undone.')) return;
+  state = {cyber:{}, quant:{}};
+  ringState = {cyber:{}, quant:{}};
+  saveState(); saveRingState();
+  renderAll();
+  showToast('Progress reset');
+}
+
+document.getElementById('ringModal').addEventListener('click', (e)=>{
+  if(e.target.id === 'ringModal') closeRingModal();
+});
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Escape') closeRingModal();
+});
+
+/* ============ Init ============ */
+setTrack('cyber');
+renderAll();
+</script>
+</body>
+</html>
